@@ -1,0 +1,299 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --page-shadow-color: rgba(0, 0, 0, 0.3);
+  --spine-shadow-color: rgba(0, 0, 0, 0.5);
+  --book-depth: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 책 컨테이너 - 3D 원근감 */
+.book-container {
+  perspective: 2500px;
+  perspective-origin: center center;
+  overflow: hidden;
+}
+
+/* react-pageflip 컨테이너 overflow 수정 */
+.stf__parent {
+  overflow: hidden !important;
+}
+
+.stf__wrapper {
+  overflow: hidden !important;
+}
+
+/* 책 전체에 그림자 추가 */
+.book-flip {
+  filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5))
+          drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+/* 페이지 기본 스타일 - 실제 종이 느낌 */
+.page {
+  background: linear-gradient(
+    to right,
+    #f5f3ed 0%,
+    #faf8f3 5%,
+    #fffdf8 50%,
+    #faf8f3 95%,
+    #f5f3ed 100%
+  );
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 3px 3px 0;
+}
+
+/* 종이 질감 오버레이 - 더 자연스러운 텍스처 */
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* 종이 미세한 결 */
+.page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.003) 2px,
+    rgba(0, 0, 0, 0.003) 4px
+  );
+  pointer-events: none;
+}
+
+/* 왼쪽 페이지 - 책등 쪽 그림자 */
+.page-left {
+  background: linear-gradient(
+    to left,
+    #fffef9 0%,
+    #faf9f6 70%,
+    #f5f3ee 90%,
+    #ebe8e1 100%
+  );
+  border-radius: 3px 0 0 3px;
+  box-shadow:
+    inset -30px 0 40px -20px rgba(0, 0, 0, 0.15),
+    inset -2px 0 6px rgba(0, 0, 0, 0.1),
+    -3px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 오른쪽 페이지 - 책등 쪽 그림자 */
+.page-right {
+  background: linear-gradient(
+    to right,
+    #fffef9 0%,
+    #faf9f6 70%,
+    #f5f3ee 90%,
+    #ebe8e1 100%
+  );
+  border-radius: 0 3px 3px 0;
+  box-shadow:
+    inset 30px 0 40px -20px rgba(0, 0, 0, 0.15),
+    inset 2px 0 6px rgba(0, 0, 0, 0.1),
+    3px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 중앙 이음새 효과 */
+.spine-shadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.spine-shadow-left {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.15) 30%,
+    rgba(0, 0, 0, 0.05) 60%,
+    transparent 100%
+  );
+}
+
+.spine-shadow-right {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.15) 30%,
+    rgba(0, 0, 0, 0.05) 60%,
+    transparent 100%
+  );
+}
+
+/* 페이지 플립 시 입체감 */
+.stf__item {
+  transform-style: preserve-3d;
+}
+
+.stf__item--left {
+  transform-origin: right center;
+}
+
+.stf__item--right {
+  transform-origin: left center;
+}
+
+/* 플립 중 그림자 - 더 극적인 효과 */
+.flipping-page {
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.4),
+    0 0 80px rgba(0, 0, 0, 0.2),
+    0 30px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* 플립 시 페이지 하이라이트 */
+.stf__item--flipping .page {
+  box-shadow:
+    0 0 50px rgba(0, 0, 0, 0.3),
+    0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* 책 두께감 - 페이지 레이어 효과 */
+.book-flip::before {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 10px);
+  height: 8px;
+  background: linear-gradient(
+    to bottom,
+    #d0ccc2 0%,
+    #c5c0b5 50%,
+    #b8b3a8 100%
+  );
+  border-radius: 0 0 3px 3px;
+  z-index: -1;
+}
+
+.book-flip::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 16px);
+  height: 6px;
+  background: linear-gradient(
+    to bottom,
+    #c0bbb0 0%,
+    #b5b0a5 100%
+  );
+  border-radius: 0 0 3px 3px;
+  z-index: -2;
+}
+
+/* 표지 스타일 - 하드커버 느낌 */
+.cover-page {
+  background: linear-gradient(
+    145deg,
+    #1a2332 0%,
+    #243447 30%,
+    #2d4156 50%,
+    #243447 70%,
+    #1a2332 100%
+  );
+  box-shadow:
+    0 15px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+/* 표지 광택 효과 */
+.cover-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+  border-radius: 3px;
+}
+
+/* 로딩 애니메이션 */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.loading-pulse {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* 페이지 넘김 버튼 호버 효과 */
+button:hover {
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* 페이지 코너 컬 효과 (호버시) */
+.page-wrapper:hover .page::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(0, 0, 0, 0.03) 50%
+  );
+  pointer-events: none;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .book-container {
+    perspective: 1800px;
+  }
+
+  .spine-shadow {
+    width: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .book-container {
+    perspective: 1200px;
+  }
+
+  .spine-shadow {
+    width: 20px;
+  }
+}
