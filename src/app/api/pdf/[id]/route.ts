@@ -1,8 +1,6 @@
 import { list, del } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
 
-// PDF 메타데이터 저장 (메모리 - 실제로는 KV나 DB 사용 권장)
-// Vercel Blob은 자체적으로 만료 기능이 없어서 업로드 시간 추적 필요
 const EXPIRY_HOURS = 3;
 
 export async function GET(
@@ -10,11 +8,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json({ error: 'Storage not configured' }, { status: 500 });
+    }
+
     const { id } = params;
     const filename = `${id}.pdf`;
 
     // Blob 리스트에서 파일 찾기
-    const { blobs } = await list({ prefix: filename });
+    const { blobs } = await list({ prefix: filename, token });
 
     if (blobs.length === 0) {
       return NextResponse.json({ error: 'PDF not found' }, { status: 404 });
@@ -29,7 +32,7 @@ export async function GET(
 
     if (now > expiresAt) {
       // 만료됨 - 파일 삭제
-      await del(blob.url);
+      await del(blob.url, { token });
       return NextResponse.json({ error: 'PDF expired' }, { status: 404 });
     }
 

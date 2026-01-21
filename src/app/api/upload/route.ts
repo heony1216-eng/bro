@@ -2,8 +2,17 @@ import { put } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
+    // 토큰 확인
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      console.error('BLOB_READ_WRITE_TOKEN not found');
+      return NextResponse.json({ error: 'Storage not configured' }, { status: 500 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -23,6 +32,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(filename, file, {
       access: 'public',
       addRandomSuffix: false,
+      token,
     });
 
     // 만료 시간 (3시간 후)
@@ -36,6 +46,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Upload failed', details: String(error) }, { status: 500 });
   }
 }
