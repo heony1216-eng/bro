@@ -4,13 +4,6 @@ import { nanoid } from 'nanoid';
 
 export async function POST(request: NextRequest) {
   try {
-    // 토큰 확인
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    if (!token) {
-      console.error('BLOB_READ_WRITE_TOKEN not found');
-      return NextResponse.json({ error: 'Storage not configured' }, { status: 500 });
-    }
-
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -26,11 +19,15 @@ export async function POST(request: NextRequest) {
     const id = nanoid(10);
     const filename = `${id}.pdf`;
 
-    // Vercel Blob에 업로드
-    const blob = await put(filename, file, {
+    // File을 ArrayBuffer로 변환 후 업로드
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Vercel Blob에 업로드 (v2에서는 token을 환경변수에서 자동으로 읽음)
+    const blob = await put(filename, buffer, {
       access: 'public',
       addRandomSuffix: false,
-      token,
+      contentType: 'application/pdf',
     });
 
     // 만료 시간 (3시간 후)
