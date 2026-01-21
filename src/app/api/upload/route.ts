@@ -2,8 +2,6 @@ import { put } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
-export const runtime = 'edge';
-
 export async function POST(request: NextRequest) {
   try {
     // 토큰 확인
