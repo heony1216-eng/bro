@@ -2,6 +2,17 @@ import { put } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
+// GET: 디버그용 - 환경변수 상태 확인
+export async function GET() {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  return NextResponse.json({
+    tokenExists: !!token,
+    tokenLength: token?.length,
+    tokenPrefix: token?.substring(0, 15),
+    allBlobEnvKeys: Object.keys(process.env).filter(k => k.includes('BLOB')),
+  });
+}
+
 export async function POST(request: NextRequest) {
   // 환경변수 디버깅
   const token = process.env.BLOB_READ_WRITE_TOKEN;
